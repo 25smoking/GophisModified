@@ -51,8 +51,8 @@ yarn-debug.log*
 yarn-error.log*
 .npm
 .eslintcache
-static/js/dist/
-static/css/dist/
+# NOTE: static/js/dist/ and static/css/dist/ are REQUIRED for Gophish to work
+# Do NOT add them to gitignore!
 
 # Go
 # ==========================================
@@ -120,4 +120,5 @@ deploy/
 # ==========================================
 .user
 .local
+auto/
 auto/
