@@ -199,6 +199,40 @@ function completeCampaign() {
     })
 }
 
+function formatCSVTime(value) {
+    if (!value || typeof value !== 'string') {
+        return value
+    }
+    var parsed = moment.utc(value, moment.ISO_8601, true)
+    if (!parsed.isValid()) {
+        return value
+    }
+    var fractionalSeconds = String(value).match(/\.\d+(?=Z$|[+-]\d\d:?\d\d$)/)
+    parsed = parsed.local()
+    return parsed.format('YYYY-MM-DDTHH:mm:ss') +
+        (fractionalSeconds ? fractionalSeconds[0] : '') + parsed.format('Z')
+}
+
+function prepareCSVExport(scope, rows) {
+    var timeFields = {
+        results: ['send_date', 'modified_date'],
+        events: ['time']
+    }[scope] || []
+
+    return rows.map(function (row) {
+        var exportedRow = {}
+        Object.keys(row).forEach(function (key) {
+            exportedRow[key] = row[key]
+        })
+        timeFields.forEach(function (field) {
+            if (Object.prototype.hasOwnProperty.call(exportedRow, field)) {
+                exportedRow[field] = formatCSVTime(exportedRow[field])
+            }
+        })
+        return exportedRow
+    })
+}
+
 // Exports campaign results as a CSV file
 function exportAsCSV(scope) {
     exportHTML = $("#exportButton").html()
@@ -215,6 +249,8 @@ function exportAsCSV(scope) {
     if (!csvScope) {
         return
     }
+
+    csvScope = prepareCSVExport(scope, csvScope)
     $("#exportButton").html('<i class="fa fa-spinner fa-spin"></i>')
     var csvString = Papa.unparse(csvScope, {
         'escapeFormulae': true
